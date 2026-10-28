@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="중1 기술·가정 주거 공간 구성 — 가족 상황에 맞춰 평면도를 설계하고 동선·조건을 점검하는 활동">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Cpath d=%22M4 15 16 5l12 10v13H4z%22 fill=%22%23E8B220%22 stroke=%22%231C2A38%22 stroke-width=%222%22/%3E%3C/svg%3E">
+<title>상황별 평면도 설계실</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Do+Hyeon&family=Noto+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: 모눈 도면지. 넓은 화면은 [도면 | 점검 패널] 2단, 폰은 한 줄. 도면이 주인공 */
+:root{
+  --paper:#EEF2F5; --sheet:#FFFFFF; --ink:#1C2A38; --muted:#5B6B7B; --line:#C8D2DB; --grid:#DFE6EC;
+  --accent:#E8B220; --accent-ink:#4A3700;
+  --z-private:#4F86C6; --z-private-soft:#D6E5F6;
+  --z-common:#4E9A54; --z-common-soft:#D8EDD7;
+  --z-chore:#D27833; --z-chore-soft:#F7DFCB;
+  --z-hygiene:#7C66C9; --z-hygiene-soft:#E4DDF7;
+  --z-pass:#7F8C99; --z-pass-soft:#E3E8EC;
+  --ok:#2F7D45; --warn:#B3541E; --wait:#7F8C99;
+  --display:"Do Hyeon","Noto Sans KR",system-ui,sans-serif;
+  --body:"Noto Sans KR",system-ui,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#111821; --sheet:#18212C; --ink:#E4EAF0; --muted:#9AA8B6; --line:#2E3B4A; --grid:#222D39;
+  --accent:#F0C24A; --accent-ink:#2A2000;
+  --z-private:#7EAAE0; --z-private-soft:#213450;
+  --z-common:#7BC281; --z-common-soft:#21392A;
+  --z-chore:#E9A06A; --z-chore-soft:#41301F;
+  --z-hygiene:#A895E6; --z-hygiene-soft:#30294C;
+  --z-pass:#8D9AA7; --z-pass-soft:#2A3540;
+  --ok:#6CC487; --warn:#F09A62; --wait:#8D9AA7; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#111821; --sheet:#18212C; --ink:#E4EAF0; --muted:#9AA8B6; --line:#2E3B4A; --grid:#222D39;
+  --accent:#F0C24A; --accent-ink:#2A2000;
+  --z-private:#7EAAE0; --z-private-soft:#213450;
+  --z-common:#7BC281; --z-common-soft:#21392A;
+  --z-chore:#E9A06A; --z-chore-soft:#41301F;
+  --z-hygiene:#A895E6; --z-hygiene-soft:#30294C;
+  --z-pass:#8D9AA7; --z-pass-soft:#2A3540;
+  --ok:#6CC487; --warn:#F09A62; --wait:#8D9AA7; color-scheme:dark}
+
+*{box-sizing:border-box}
+html,body{margin:0}
+[hidden]{display:none!important}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:15.5px;line-height:1.6}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--paper)}
+.wrap{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:24px 56px}
+.eyebrow{font-family:var(--mono);font-size:12.5px;letter-spacing:.06em;color:var(--muted)}
+h1{font-family:var(--display);font-weight:400;font-size:clamp(32px,7vw,48px);line-height:1.1;margin:6px 0 8px;text-wrap:balance}
+h1 mark{background:linear-gradient(transparent 58%,var(--accent) 58%);color:inherit;padding:0 2px}
+.lead{color:var(--muted);max-width:62ch;margin:0}
+h2{font-family:var(--display);font-weight:400;font-size:22px;margin:0 0 8px;line-height:1.25}
+.sheet{background:var(--sheet);border:1px solid var(--line);border-radius:10px;padding:16px}
+.small{font-size:13.5px} .muted{color:var(--muted)}
+button{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+/* 상황 선택 */
+.who-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;margin-top:16px;padding:10px 12px;background:var(--sheet);border:1px solid var(--line);border-radius:10px}
+.who-row label{font-weight:700;font-size:14.5px}
+.who-row input{font:inherit;font-size:15px;color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:6px 10px;width:13em;max-width:100%}
+.who-row .small{flex:1 1 220px;min-width:0}
+.scen-list{display:flex;gap:10px;overflow-x:auto;padding:4px 2px 10px;margin:18px 0 6px;scrollbar-width:thin}
+.scen{flex:0 0 auto;width:178px;text-align:left;background:var(--sheet);border:1px solid var(--line);border-radius:10px;padding:10px 12px;cursor:pointer;display:flex;flex-direction:column;gap:2px}
+.scen .no{font-family:var(--mono);font-size:11.5px;color:var(--muted)}
+.scen b{font-size:15px;line-height:1.35}
+.scen span.who{font-size:12.5px;color:var(--muted);line-height:1.4}
+.scen[aria-pressed="true"]{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink);background:var(--paper)}
+
+.studio{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:16px;align-items:start;margin-top:8px}
+@media (max-width:980px){.studio{grid-template-columns:minmax(0,1fr)}}
+.col{display:flex;flex-direction:column;gap:14px;min-width:0}
+
+.brief .who{font-size:14.5px}
+.brief .tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.tag{font-size:12.5px;padding:2px 8px;border-radius:4px;background:var(--zs);color:var(--ink)}
+.facts{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:13.5px;color:var(--muted);margin-top:6px}
+.facts b{font-family:var(--mono);font-weight:500;color:var(--ink)}
+
+/* 도구 */
+.tools{display:flex;flex-direction:column;gap:8px}
+.tools .lab{font-size:12px;font-family:var(--mono);color:var(--muted);letter-spacing:.04em}
+.trow{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;scrollbar-width:thin}
+.tool{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;font-size:14px;padding:6px 11px;border-radius:999px;border:1px solid var(--line);background:var(--sheet);cursor:pointer;white-space:nowrap}
+.tool i{width:12px;height:12px;border-radius:3px;background:var(--zs);border:1.5px solid var(--zc)}
+.tool small{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.tool[aria-pressed="true"]{background:var(--ink);color:var(--sheet);border-color:var(--ink)}
+.tool[aria-pressed="true"] small{color:var(--sheet);opacity:.75}
+.z-private{--zc:var(--z-private);--zs:var(--z-private-soft)}
+.z-common{--zc:var(--z-common);--zs:var(--z-common-soft)}
+.z-chore{--zc:var(--z-chore);--zs:var(--z-chore-soft)}
+.z-hygiene{--zc:var(--z-hygiene);--zs:var(--z-hygiene-soft)}
+.z-pass{--zc:var(--z-pass);--zs:var(--z-pass-soft)}
+.z-none{--zc:var(--muted);--zs:transparent}
+.acts{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.btn{font-size:14px;font-weight:500;padding:7px 13px;border-radius:8px;border:1px solid var(--line);background:var(--sheet);cursor:pointer}
+.btn.dark{background:var(--ink);color:var(--sheet);border-color:var(--ink)}
+.btn.danger{border-color:var(--warn);color:var(--warn)}
+#msg{font-size:13.5px;color:var(--muted);min-height:1.4em}
+
+.plan-wrap{padding:10px}
+.plan-scroll{overflow-x:auto}
+.syms{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px 14px}
+.sym{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted);line-height:1.35}
+.sym svg{flex:0 0 auto;width:64px;height:auto}
+.sym b{display:block;color:var(--ink);font-size:14px}
+.trow .sep{flex:0 0 auto;align-self:center;font-size:12px;color:var(--muted);margin-left:6px}
+.plan-msg{font-size:14px;line-height:1.45;padding:8px 10px;margin-bottom:8px;border-radius:8px;background:var(--paper);color:var(--ink);min-height:calc(2.9em + 16px)}
+@media (max-width:640px){.plan-msg{font-size:13px;min-height:calc(4.35em + 16px)}}
+.plan-msg.warn{background:var(--z-chore-soft);color:var(--ink);box-shadow:inset 3px 0 0 var(--warn)}
+.plan-msg.ok{box-shadow:inset 3px 0 0 var(--ok)}
+svg#plan{display:block;width:100%;min-width:340px;height:auto;touch-action:none;user-select:none;-webkit-user-select:none;cursor:crosshair}
+
+/* 점검 */
+.score{display:flex;align-items:baseline;gap:8px;margin-bottom:8px}
+.score b{font-family:var(--display);font-weight:400;font-size:30px;line-height:1}
+.checks{list-style:none;margin:0;padding:0;display:grid;gap:7px}
+.checks li{display:grid;grid-template-columns:24px minmax(0,1fr);gap:8px;align-items:start;font-size:14px;padding:8px 10px;border-radius:8px;background:var(--paper);line-height:1.5}
+.checks .mk{font-family:var(--mono);font-size:13px;font-weight:500;text-align:center;border-radius:4px;line-height:22px;color:var(--sheet)}
+.checks .ok .mk{background:var(--ok)} .checks .warn .mk{background:var(--warn)} .checks .wait .mk{background:var(--wait)}
+.checks b{display:block;font-size:14px}
+.checks span.d{color:var(--muted);font-size:13px}
+.subh{font-size:12.5px;font-family:var(--mono);color:var(--muted);margin:14px 0 6px;letter-spacing:.04em}
+.think label{display:block;font-weight:500;font-size:14px;margin:10px 0 4px}
+textarea{width:100%;min-height:70px;font:inherit;font-size:14px;color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:8px 10px;resize:vertical}
+#imgout img{display:block;width:100%;border:1px solid var(--line);border-radius:8px;margin-top:8px;background:var(--sheet)}
+details.teacher{margin-top:28px;background:var(--sheet);border:1px solid var(--line);border-radius:10px;padding:14px 18px}
+details.teacher summary{cursor:pointer;font-weight:700}
+details.teacher ul{margin:8px 0 0;padding-left:20px;font-size:14px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">중1 기술·가정 · 주생활 · 주거 공간의 구성</div>
+    <h1>상황별 <mark>평면도 설계실</mark></h1>
+    <p class="lead">가족 상황을 고르고 도면 위를 끌어 방을 그리세요. 문을 달고 가구를 놓으면 그 가족에게 맞는 집인지 동선까지 바로 점검해 줍니다. 한 칸은 0.5m입니다.</p>
+  </header>
+
+  <div class="who-row">
+    <label for="who">학번·이름</label>
+    <input id="who" type="text" maxlength="20" placeholder="예: 10305 김제주" autocomplete="off">
+    <button class="btn" id="whoBtn" type="button">이 이름으로 시작</button>
+    <span class="small muted" id="whoMsg">이름을 쓰면 이름별로 도면이 따로 저장돼요. 같은 컴퓨터를 여러 학생이 써도 섞이지 않아요.</span>
+  </div>
+  <div class="scen-list" id="scenList" role="group" aria-label="가족 상황 선택"></div>
+
+  <div class="studio">
+    <div class="col">
+      <div class="sheet brief" id="brief"></div>
+      <div class="sheet tools">
+        <div class="lab">공간 그리기 · 끌어서 칠해요</div>
+        <div class="trow" id="roomTools"></div>
+        <div class="lab">문·창문·콘센트·열린 경계 · 벽을 누르면 달려요. 문은 다시 누르면 여는 방향이 바뀌고, 한 번 더 누르면 사라져요. 나머지는 다시 누르면 사라져요</div>
+        <div class="trow" id="openTools"></div>
+        <div class="lab">가구 놓기 · 빈 곳을 누르면 놓여요. 놓인 가구를 끌면 그 방 안에서 옮겨지고, 누르기만 하면 90° 돌아가요</div>
+        <div class="trow" id="furnTools"></div>
+        <div class="acts">
+          <button class="btn" id="undo" type="button">되돌리기</button>
+          <button class="btn" id="sample" type="button" hidden>예시 불러오기</button>
+          <button class="btn danger" id="clear" type="button">모두 지우기</button>
+        </div>
+        <div id="msg" hidden></div>
+      </div>
+      <div class="sheet plan-wrap"><div id="planMsg" class="plan-msg" aria-live="polite">공간을 고르고 도면 위를 끌어 칠하세요.</div><div class="plan-scroll"><svg id="plan" role="img" aria-label="평면도 그리기 판"></svg></div></div>
+      <div class="sheet">
+        <h2>평면도 기호</h2>
+        <div class="syms">
+          <div class="sym"><svg viewBox="0 0 64 24" aria-hidden="true"><line x1="6" y1="12" x2="58" y2="12" style="stroke:var(--ink)" stroke-width="3"/></svg><span><b>외벽</b>집 바깥 벽</span></div>
+          <div class="sym"><svg viewBox="0 0 64 24" aria-hidden="true"><line x1="6" y1="12" x2="58" y2="12" style="stroke:var(--ink)" stroke-width="3"/><line x1="7" y1="12" x2="57" y2="12" style="stroke:var(--sheet)" stroke-width="1.1"/></svg><span><b>내벽</b>방과 방 사이 벽</span></div>
+          <div class="sym"><svg viewBox="0 0 64 40" aria-hidden="true"><line x1="2" y1="34" x2="14" y2="34" style="stroke:var(--ink)" stroke-width="3"/><line x1="50" y1="34" x2="62" y2="34" style="stroke:var(--ink)" stroke-width="3"/><line x1="14" y1="34" x2="14" y2="2" style="stroke:var(--ink)" stroke-width="2"/><path d="M50 34A36 36 0 0 0 14 -2" fill="none" style="stroke:var(--ink)" stroke-width="1.2" transform="translate(0 4) scale(1 0.89)"/></svg><span><b>여닫이문</b>열리는 방향이 호로 보여요</span></div>
+          <div class="sym"><svg viewBox="0 0 64 24" aria-hidden="true"><line x1="2" y1="12" x2="14" y2="12" style="stroke:var(--ink)" stroke-width="3"/><line x1="50" y1="12" x2="62" y2="12" style="stroke:var(--ink)" stroke-width="3"/><rect x="14" y="9.5" width="36" height="5" style="fill:var(--sheet);stroke:var(--ink)" stroke-width="0.9"/><line x1="14" y1="12" x2="50" y2="12" style="stroke:var(--ink)" stroke-width="0.7"/></svg><span><b>창문</b>외벽에만 달아요</span></div>
+          <div class="sym"><svg viewBox="0 0 64 24" aria-hidden="true"><line x1="6" y1="12" x2="58" y2="12" style="stroke:var(--muted)" stroke-width="1.2" stroke-dasharray="3 3"/></svg><span><b>열린 경계</b>벽 없이 트인 곳 · 문 없이 드나들어요</span></div>
+          <div class="sym"><svg viewBox="0 0 64 24" aria-hidden="true"><line x1="6" y1="18" x2="58" y2="18" style="stroke:var(--ink)" stroke-width="3"/><circle cx="32" cy="10.5" r="5" style="fill:var(--sheet);stroke:var(--ink)" stroke-width="1.3"/><path d="M27 10.5A5 5 0 0 0 37 10.5Z" style="fill:var(--ink)"/></svg><span><b>콘센트</b>방 쪽 벽면에 붙여요</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="sheet">
+        <h2>조건 점검</h2>
+        <div class="score" id="score"></div>
+        <ul class="checks" id="checksScen"></ul>
+        <div class="subh">기본 점검</div>
+        <ul class="checks" id="checksBase"></ul>
+      </div>
+      <div class="sheet think" id="think"></div>
+      <div class="sheet">
+        <h2>내보내기</h2>
+        <div class="acts">
+          <button class="btn dark" id="toImg" type="button">이미지로 보기</button>
+          <button class="btn" id="copy" type="button">결과 글 복사</button>
+        </div>
+        <div id="copyMsg" class="small muted" aria-live="polite" style="margin-top:6px"></div>
+        <div id="imgout"></div>
+      </div>
+    </div>
+  </div>
+
+  <details class="teacher">
+    <summary>교사용 안내</summary>
+    <ul>
+      <li>학생이 맨 위 ‘학번·이름’을 쓰고 시작하면 이름별로 따로 저장되어, 컴퓨터실처럼 여러 학생이 같은 기기를 써도 도면이 섞이지 않습니다. 이름은 내보낸 이미지와 결과 글에도 들어갑니다.</li><li>상황마다 도면과 서술이 이 기기 브라우저에 따로 저장됩니다. 다른 기기에서 열면 비어 있으니 수업 끝에 ‘이미지로 보기’나 ‘결과 글 복사’로 제출하게 하세요.</li>
+      <li>방·욕실·다용도실은 ‘여닫이문’으로 문(폭 1.0·1.5m, 2.0m는 양문)을 달아야 드나들 수 있습니다. 실선 벽(외벽 포함)을 누르면 가장 가까운 자리에 자동으로 맞춰 달립니다. 거실·부엌·식당·복도·현관 사이는 열린 경계라 문이 필요 없습니다. 외벽에 단 문은 현관이면 바깥쪽으로, 다른 방이면 방 안쪽으로 열리게 달립니다(발코니 문 등).</li><li>‘열린 경계’ 도구로 두 공간 사이의 실선 벽을 누르면 트여서 점선이 되고(문처럼 드나들 수 있는 통로로 계산), 거실·부엌 사이 같은 점선을 누르면 벽이 세워집니다. 폭은 기본 1.0m이고 1.5~3.0m 또는 벽 전체를 고를 수 있으며, 다시 누르면 원래대로 돌아갑니다. 외벽은 틀 수 없습니다.</li><li>콘센트는 실선 벽에서 누른 쪽 방의 벽면에 붙습니다(문 자리 제외). 방·거실·부엌에 콘센트가 없으면 기본 점검에서 알려 줍니다.</li><li>창문은 집 바깥과 맞닿은 외벽(또는 빈 칸과 맞닿은 벽)에만 달리며, 폭 1.0·1.5·2.0·3.0m 가운데 고릅니다. 침실·거실에 창문이 없으면 기본 점검에서 알려 줍니다.</li><li>거리 점검은 문을 지나는 실제 동선으로 잽니다. 문이 열리는 자리(1.0m×1.0m)에 가구가 있으면 문이 빨갛게 표시됩니다.</li>
+      <li>거리는 통로 칸을 따라 잰 값(0.5m 단위)이고, 가구 크기는 0.5m 칸에 맞춘 근사치입니다.</li>
+      <li>노부모 상황의 복도 기준은 유효폭 1.2m 이상을 적용했으며, 이 도면에서는 3칸(1.5m)이 되어야 충족됩니다.</li>
+    </ul>
+  </details>
+</div>
+
+<script>
+(function(){
+const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+const CS=20, M=46;               // 칸 크기(도면 단위), 여백
+const OPEN=new Set(['living','kitchen','hall','entry']);
+const BASE={
+  living:{name:'거실',zone:'common'}, kitchen:{name:'부엌·식당',zone:'chore'}, bath:{name:'욕실',zone:'hygiene'},
+  entry:{name:'현관',zone:'pass'}, hall:{name:'복도',zone:'pass'}, utility:{name:'다용도실',zone:'chore'}
+};
+const FURN={
+  bed1:{name:'1인 침대',ab:'침대',w:2,h:4}, bed2:{name:'2인 침대',ab:'침대',w:3,h:4}, crib:{name:'아기 침대',ab:'아기',w:2,h:3},
+  desk:{name:'책상',ab:'책',w:2,h:1}, chair:{name:'의자',ab:'',w:1,h:1}, ward:{name:'옷장',ab:'옷',w:3,h:1}, sofa:{name:'소파',ab:'소파',w:4,h:2},
+  tv:{name:'TV장',ab:'TV',w:3,h:1}, table:{name:'식탁',ab:'식탁',w:3,h:2}, sink:{name:'싱크대',ab:'싱',w:4,h:1},
+  fridge:{name:'냉장고',ab:'냉',w:2,h:2}, tub:{name:'욕조',ab:'욕조',w:2,h:3}, toilet:{name:'변기',ab:'변',w:1,h:1},
+  basin:{name:'세면대',ab:'세',w:1,h:1}, washer:{name:'세탁기',ab:'세탁',w:2,h:2}
+};
+const BEDS=['bed1','bed2','crib'];
+const m=x=>(Math.round(x*10)/10).toFixed(1)+'m';
+
+/* ---------- 상황 정의 ---------- */
+const SC=[
+ {id:'sisters',title:'자매 두 사람',who:'언니(회사원), 동생(학생)',W:18,H:14,
+  base:['living','kitchen','bath','entry','hall','utility'],
+  priv:[['older','언니 방'],['younger','동생 방']],
+  req:['kitchen','bath','entry','older','younger'],
+  checks:[
+   {t:'두 방 모두 바깥 벽에 닿음',need:['older','younger'],f:A=>{const no=['older','younger'].filter(r=>!A.edge(r));return[!no.length,no.length?A.names(no)+'에 창을 낼 수 없어요.':'두 방 모두 창을 낼 수 있어요.']}},
+   {t:'두 방이 벽을 맞대지 않음',need:['older','younger'],f:A=>[!A.adj('older','younger'),A.adj('older','younger')?'이른 출근 준비와 늦은 밤 공부 소리가 서로 들려요.':'생활 시간이 달라도 소리가 덜 겹쳐요.']},
+   {t:'두 방에서 욕실까지 각각 2m 이내',need:['older','younger','bath'],f:A=>{const a=A.dist('older','bath'),b=A.dist('younger','bath');return[a<=2&&b<=2,'언니 방 '+(isFinite(a)?m(a):'길 없음')+' · 동생 방 '+(isFinite(b)?m(b):'길 없음')]}},
+   {t:'언니 방에 옷장, 동생 방에 책상',need:['older','younger'],f:A=>{const o=A.furnIn('older',['ward']),y=A.furnIn('younger',['desk']);return[o&&y,(o?'옷장 ✓':'옷장 없음')+' · '+(y?'책상 ✓':'책상 없음')]}},
+   {t:'함께 밥 먹을 식탁이 있음',need:[],f:A=>{const ok=A.furnIn('kitchen',['table'])||A.furnIn('living',['table']);return[ok,ok?'두 사람이 마주 앉을 자리가 있어요.':'부엌·식당이나 거실에 식탁을 놓아 보세요.']}}
+  ],
+  think:['생활 시간이 다른 두 사람이 서로 방해하지 않으려면 공간을 어떻게 나눌까?','욕실이 하나뿐이라면 아침에 어떤 약속이 필요할까?']},
+ {id:'family4',title:'4인 가족',who:'부모님, 고등학생 자녀, 초등학생 자녀',W:24,H:16,
+  base:['living','kitchen','bath','entry','hall','utility'],
+  priv:[['master','안방'],['high','고등학생 방'],['elem','초등학생 방']],
+  req:['living','kitchen','bath','entry','master','high','elem'],
+  checks:[
+   {t:'현관에서 거실까지 2m 이내',need:['entry','living'],f:A=>{const d=A.dist('entry','living');return[d<=2,'현관→거실 '+(isFinite(d)?m(d):'길이 없음')]}},
+   {t:'부엌·식당이 거실과 맞닿음',need:['kitchen','living'],f:A=>[A.adj('kitchen','living'),A.adj('kitchen','living')?'요리하며 가족과 이야기할 수 있어요.':'두 공간이 떨어져 있어요.']},
+   {t:'침실 세 곳 모두 바깥 벽에 닿음',need:['master','high','elem'],f:A=>{const no=['master','high','elem'].filter(r=>!A.edge(r));return[!no.length,no.length?A.names(no)+'에 창을 낼 수 없어요.':'모든 침실에 창을 낼 수 있어요.']}},
+   {t:'고등학생 방이 거실과 맞닿지 않음',need:['high','living'],f:A=>[!A.adj('high','living'),A.adj('high','living')?'TV 소리와 가족 대화가 공부를 방해할 수 있어요.':'조용히 공부할 수 있어요.']},
+   {t:'침실마다 침대, 자녀 방마다 책상',need:['master','high','elem'],f:A=>{const nb=['master','high','elem'].filter(r=>!A.furnIn(r,BEDS)),nd=['high','elem'].filter(r=>!A.furnIn(r,['desk']));const d=[];if(nb.length)d.push('침대 없음: '+A.names(nb));if(nd.length)d.push('책상 없음: '+A.names(nd));return[!d.length,d.length?d.join(' · '):'모두 놓였어요.']}}
+  ],
+  think:['고등학생과 초등학생의 생활 시간은 어떻게 다를까? 방 위치에 어떻게 반영했나요?','욕실은 어디에 두어야 가족 모두가 쓰기 편할까?']},
+ {id:'elders',title:'노부모와 사는 성인 자녀',who:'아버지, 어머니(70대), 성인 자녀',W:24,H:16,
+  base:['living','kitchen','bath','entry','hall','utility'],
+  priv:[['parents','부모님 방'],['child','자녀 방']],
+  req:['living','kitchen','bath','entry','hall','parents','child'],
+  checks:[
+   {t:'부모님 방에서 욕실까지 1.5m 이내',need:['parents','bath'],f:A=>{const d=A.dist('parents','bath');return[d<=1.5,'밤중 화장실 길 '+(isFinite(d)?m(d):'없음')]}},
+   {t:'부모님 방이 남쪽 벽에 닿음',need:['parents'],f:A=>[A.edge('parents','S'),A.edge('parents','S')?'낮에 햇볕이 잘 들어요.':'남쪽(도면 아래) 벽에 닿지 않아요.']},
+   {t:'복도 폭 1.2m 이상',need:['hall'],f:A=>{const w=A.hallWidth();return[w>=1.2,'가장 좁은 곳 '+m(w)+' · 보행 보조기·휠체어를 생각하면 3칸(1.5m) 이상']}},
+   {t:'현관에서 부모님 방까지 5m 이내',need:['entry','parents'],f:A=>{const d=A.dist('entry','parents');return[d<=5,'병원·산책 나갈 때 '+(isFinite(d)?m(d):'길 없음')]}},
+   {t:'부모님 방에 침대가 있음',need:['parents'],f:A=>[A.furnIn('parents',BEDS),'바닥보다 침대에서 일어나기가 쉬워요.']}
+  ],
+  think:['부모님이 넘어지지 않도록 바닥과 문턱은 어떻게 할까?','돌봄과 성인 자녀의 사생활을 함께 지키려면 두 방을 어떻게 두는 게 좋을까?']},
+ {id:'studio',title:'혼자 사는 1인 가구',who:'대학생 또는 사회 초년생 1명, 원룸',W:12,H:10,
+  base:['kitchen','bath','entry','utility'], baseName:{utility:'수납'},
+  priv:[['room','방']], walkExtra:['room'],
+  req:['room','kitchen','bath','entry'],
+  checks:[
+   {t:'욕실 넓이 3㎡ 이상',need:['bath'],f:A=>{const a=A.area('bath');return[a>=3,'지금 '+a.toFixed(2)+'㎡']}},
+   {t:'현관에서 부엌까지 2m 이내',need:['entry','kitchen'],f:A=>{const d=A.dist('entry','kitchen');return[d<=2,'장 본 짐을 들고 '+(isFinite(d)?m(d):'갈 길이 없음')]}},
+   {t:'방이 바깥 벽에 닿아 창이 있음',need:['room'],f:A=>[A.edge('room'),A.edge('room')?'환기·채광 가능':'창을 낼 수 없어요.']},
+   {t:'방에 침대·책상·옷장이 모두 있음',need:['room'],f:A=>{const no=[['침대',BEDS],['책상',['desk']],['옷장',['ward']]].filter(([n,k])=>!A.furnIn('room',k)).map(x=>x[0]);return[!no.length,no.length?'없음: '+no.join(', '):'생활에 필요한 가구가 다 있어요.']}},
+   {t:'방에 1.5m×1.5m 빈 바닥이 있음',need:['room'],f:A=>[A.free('room',3),A.free('room',3)?'스트레칭하거나 친구를 부를 여유가 있어요.':'가구로 꽉 차 있어요.']}
+  ],
+  think:['좁은 집에서 수납을 늘리는 방법은?','현관문을 열었을 때 침대가 바로 보이지 않게 하려면?']},
+ {id:'workhome',title:'재택근무 부모와 아기',who:'엄마, 아빠(재택근무), 중학생 자녀, 아기(1살)',W:24,H:16,
+  base:['living','kitchen','bath','entry','hall','utility'],
+  priv:[['master','안방'],['baby','아기 방'],['office','작업실'],['me','중학생 방']],
+  req:['living','kitchen','bath','entry','master','baby','office','me'],
+  checks:[
+   {t:'아기 방이 안방과 맞닿음',need:['baby','master'],f:A=>[A.adj('baby','master'),'밤중에 아기를 돌보기 쉬워요.']},
+   {t:'작업실이 아기 방과 맞닿지 않음',need:['office','baby'],f:A=>[!A.adj('office','baby'),A.adj('office','baby')?'화상 회의와 아기 낮잠이 서로 방해돼요.':'소리가 덜 겹쳐요.']},
+   {t:'현관에서 작업실까지 3m 이내',need:['entry','office'],f:A=>{const d=A.dist('entry','office');return[d<=3,'손님·택배를 맞으며 가족 공간을 덜 지나요 · '+(isFinite(d)?m(d):'길 없음')]}},
+   {t:'다용도실이 부엌·식당과 맞닿음',need:['utility','kitchen'],f:A=>[A.adj('utility','kitchen'),'빨래·젖병 소독 같은 일이 한곳에 모여요.']},
+   {t:'아기 방에 아기 침대, 작업실에 책상',need:['baby','office'],f:A=>{const a=A.furnIn('baby',['crib']),b=A.furnIn('office',['desk']);return[a&&b,(a?'아기 침대 ✓':'아기 침대 없음')+' · '+(b?'책상 ✓':'책상 없음')]}}
+  ],
+  think:['아기 울음소리와 화상 회의가 겹치지 않게 하려면?','아기가 자라면 이 공간을 어떻게 바꿔 쓸 수 있을까?']},
+];
+
+/* 예시 도면(4인 가족) */
+function sampleFamily4(){
+  const W=24,H=16,c=new Array(W*H).fill(null);
+  const fill=(t,x0,y0,x1,y1)=>{for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++)c[y*W+x]=t;};
+  fill('master',0,0,8,6);fill('high',9,0,15,6);fill('elem',16,0,23,6);
+  fill('hall',0,7,23,9);fill('bath',0,10,4,15);fill('hall',5,10,7,11);fill('entry',5,12,7,15);
+  fill('living',8,10,17,15);fill('kitchen',18,10,23,15);
+  return {cells:c,furn:[
+    {k:'bed2',x:1,y:1,w:3,h:4},{k:'ward',x:5,y:0,w:3,h:1},{k:'bed1',x:9,y:1,w:2,h:4},{k:'bed1',x:21,y:1,w:2,h:4},
+    {k:'sofa',x:11,y:14,w:4,h:2},{k:'tv',x:11,y:10,w:3,h:1},{k:'sink',x:19,y:10,w:4,h:1},{k:'fridge',x:22,y:12,w:2,h:2},
+    {k:'table',x:18,y:13,w:3,h:2},{k:'chair',x:19,y:12,w:1,h:1,r:0},{k:'chair',x:19,y:15,w:1,h:1,r:2},{k:'tub',x:3,y:10,w:2,h:3},{k:'toilet',x:0,y:15,w:1,h:1},{k:'basin',x:0,y:10,w:1,h:1}],doors:[{o:'h',x:6,y:7,s:'a',n:0},{o:'h',x:13,y:7,s:'a',n:0},{o:'h',x:17,y:7,s:'a',n:0},{o:'h',x:1,y:10,s:'b',n:0},{o:'h',x:5,y:16,s:'b',n:0}],wins:[{o:'h',x:2,y:0,len:3},{o:'h',x:11,y:0,len:3},{o:'h',x:18,y:0,len:3},{o:'h',x:10,y:16,len:6},{o:'v',x:24,y:14,len:2},{o:'v',x:0,y:12,len:2}],outs:[{o:'v',x:9,y:2,s:'a'},{o:'h',x:10,y:7,s:'a'},{o:'v',x:16,y:2,s:'b'},{o:'h',x:16,y:16,s:'a'},{o:'v',x:24,y:11,s:'a'},{o:'v',x:5,y:11,s:'a'}]};
+}
+
+/* ---------- 상태 ---------- */
+const WHO=(store.get('fp-who')||'').trim();const KEY='fp-v3'+(WHO?':'+WHO:'');
+let saved={};try{saved=JSON.parse(store.get(KEY)||'{}')||{};}catch(e){saved={};}
+let sid=saved.sid&&SC.some(s=>s.id===saved.sid)?saved.sid:'family4';
+const plans=saved.plans||{}; const notes=saved.notes||{};
+let tool={kind:'room',id:'living'}; let hist=[]; let drag=null;
+const S=()=>SC.find(s=>s.id===sid);
+function P(){const s=S();if(!plans[sid]||plans[sid].cells.length!==s.W*s.H){plans[sid]=sid==='family4'?sampleFamily4():{cells:new Array(s.W*s.H).fill(null),furn:[]};}if(!plans[sid].doors)plans[sid].doors=[];if(!plans[sid].wins)plans[sid].wins=[];if(!plans[sid].outs)plans[sid].outs=[];if(!plans[sid].opens)plans[sid].opens=[];if(!plans[sid].closes)plans[sid].closes=[];return plans[sid];}
+function save(){store.set(KEY,JSON.stringify({sid,plans,notes}));}
+(function(){const i=document.getElementById('who'),b=document.getElementById('whoBtn'),m=document.getElementById('whoMsg');i.value=WHO;
+  if(WHO)m.textContent=WHO+' 학생의 도면을 불러왔어요. 다른 학생은 이름을 바꾸고 버튼을 누르세요.';
+  const go=()=>{const v=i.value.trim();if(v===WHO){m.textContent=v?'이미 '+v+' 학생의 도면이에요.':'이름을 써 주세요.';return;}store.set('fp-who',v);location.reload();};
+  b.addEventListener('click',go);i.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();go();}});})();
+function types(){const s=S(),o={};s.base.forEach(id=>{o[id]={name:(s.baseName&&s.baseName[id])||BASE[id].name,zone:BASE[id].zone};});s.priv.forEach(([id,n])=>{o[id]={name:n,zone:'private'};});return o;}
+const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+function push(){hist.push(JSON.stringify(P()));if(hist.length>60)hist.shift();}
+function msg(t,kind){document.getElementById('msg').textContent=t||'';const pm=document.getElementById('planMsg');if(pm){pm.textContent=t||'';pm.className='plan-msg'+(kind?' '+kind:'');}}
+const openSet=()=>new Set([...OPEN,...(S().walkExtra||[])]);
+const DL=d=>d.len||2;
+const leafOf=d=>DL(d)===4?2:DL(d);
+function doorSides(d,W,H){return winSides({o:d.o,x:d.x,y:d.y,len:DL(d)},W,H);}
+function swingCells(d,W,H){const r=[],n=DL(d),dep=leafOf(d);for(let k=0;k<n;k++)for(let j=1;j<=dep;j++){
+  if(d.o==='h'){const y=d.s==='a'?d.y-j:d.y+j-1,x=d.x+k;if(y>=0&&y<H)r.push(y*W+x);}
+  else{const x=d.s==='a'?d.x-j:d.x+j-1,y=d.y+k;if(x>=0&&x<W)r.push(y*W+x);}}return r;}
+function checkDoor(d){const s=S(),p=P(),W=s.W,H=s.H,OS=openSet();const {A,B}=doorSides(d,W,H);
+  const ty=i=>i<0?null:p.cells[i];const as=A.map(ty),bs=B.map(ty);
+  if(as.some(t=>t!==as[0])||bs.some(t=>t!==bs[0]))return{ok:false,why:'문 폭('+(DL(d)/2).toFixed(1)+'m) 전체가 한 벽 위에 있어야 해요. 폭을 줄이거나 조금 옮겨 눌러 보세요.'};
+  const ta=as[0],tb=bs[0];
+  if(!ta&&!tb)return{ok:false,why:'빈 칸이에요. 먼저 공간을 그리세요.'};
+  if(ta===tb)return{ok:false,why:'같은 공간 안이라 문이 필요 없어요.'};
+  if(!ta||!tb){const room=ta||tb;return{ok:true,s:room==='entry'?(!ta?'a':'b'):(ta?'a':'b'),ext:true,room};}
+  if(OS.has(ta)&&OS.has(tb)&&!closedSeg(d.o,d.x,d.y,DL(d)))return{ok:false,why:'점선은 벽이 없는 열린 경계라 문을 달 수 없어요. 먼저 ‘열린 경계’ 도구로 벽을 세우세요.'};
+  let side;if(OS.has(ta)&&!OS.has(tb))side='b';else if(OS.has(tb)&&!OS.has(ta))side='a';else side=ta==='bath'?'a':'b';
+  return{ok:true,s:side};}
+let doorLen=2;
+function outRoomCell(o,W,H){if(o.o==='h'){const y=o.s==='a'?o.y-1:o.y;return (y<0||y>=H)?-1:y*W+o.x;}const x=o.s==='a'?o.x-1:o.x;return (x<0||x>=W)?-1:o.y*W+x;}
+function outOtherCell(o,W,H){return outRoomCell({o:o.o,x:o.x,y:o.y,s:o.s==='a'?'b':'a'},W,H);}
+function checkOut(o){const s=S(),p=P(),W=s.W,H=s.H,OS=openSet();const ri=outRoomCell(o,W,H),oi=outOtherCell(o,W,H);
+  const t=ri<0?null:p.cells[ri],u=oi<0?null:p.cells[oi];
+  if(!t)return{ok:false,why:'콘센트는 방 안쪽 벽면에 달아요. 벽에서 방 쪽을 눌러 보세요.'};
+  if(t===u)return{ok:false,why:'벽이 없는 곳이에요. 실선 벽 가까이를 눌러 보세요.'};
+  if(u&&OS.has(t)&&OS.has(u)&&!closedSeg(o.o,o.x,o.y,1))return{ok:false,why:'점선은 벽이 없는 열린 경계라 콘센트를 달 수 없어요.'};
+  const onDoor=p.doors.some(d=>d.o===o.o&&(o.o==='h'?d.y===o.y&&o.x>=d.x&&o.x<d.x+(d.len||2):d.x===o.x&&o.y>=d.y&&o.y<d.y+(d.len||2)));
+  if(onDoor)return{ok:false,why:'문이 있는 자리에는 콘센트를 달 수 없어요.'};
+  if(onSeg(p.opens||[],o.o,o.x,o.y))return{ok:false,why:'열린 경계(점선)에는 콘센트를 달 수 없어요.'};
+  return{ok:true,room:t};}
+function checkOpen(op){const s=S(),p=P(),W=s.W,H=s.H,OS=openSet();const {A,B}=winSides(op,W,H);const ty=i=>i<0?null:p.cells[i];
+  const as=A.map(ty),bs=B.map(ty);
+  if(as.some(t=>t!==as[0])||bs.some(t=>t!==bs[0]))return{ok:false,why:'열린 경계 폭('+(op.len/2).toFixed(1)+'m) 전체가 같은 두 공간 사이 벽이어야 해요. 폭을 줄이거나 ‘벽 전체’를 골라 보세요.'};
+  const ta=as[0],tb=bs[0];
+  if(!ta||!tb)return{ok:false,why:'외벽은 틀 수 없어요. 두 공간 사이의 벽을 눌러 보세요.'};
+  if(ta===tb)return{ok:false,why:'같은 공간 안이라 벽이 없어요.'};
+  if(OS.has(ta)&&OS.has(tb))return{ok:false,why:'이미 열린 경계(점선)예요.'};
+  return{ok:true,a:ta,b:tb};}
+function closedSeg(o,x,y,len){const c=P().closes||[];for(let k=0;k<(len||1);k++){if(!onSeg(c,o,o==='h'?x+k:x,o==='h'?y:y+k))return false;}return true;}
+function checkClose(c){const s=S(),p=P(),W=s.W,H=s.H,OS=openSet();const {A,B}=winSides(c,W,H);const ty=i=>i<0?null:p.cells[i];
+  const as=A.map(ty),bs=B.map(ty);if(as.some(t=>t!==as[0])||bs.some(t=>t!==bs[0]))return{ok:false,why:'고른 폭 전체가 같은 두 공간 사이여야 해요. 폭을 줄이거나 ‘벽 전체’를 골라 보세요.'};
+  const ta=as[0],tb=bs[0];if(!ta||!tb||ta===tb||!(OS.has(ta)&&OS.has(tb)))return{ok:false,why:'여기는 점선(열린 경계)이 아니에요.'};return{ok:true,a:ta,b:tb};}
+function onSeg(list,o,x,y){return list.some(d=>d.o===o&&(o==='h'?d.y===y&&x>=d.x&&x<d.x+(d.len||2):d.x===x&&y>=d.y&&y<d.y+(d.len||2)));}
+function pruneDoors(){const p=P(),before=p.doors.length+p.wins.length+p.outs.length+p.opens.length;p.opens=p.opens.filter(o=>checkOpen(o).ok);p.closes=p.closes.filter(c=>checkClose(c).ok);p.doors=p.doors.filter(d=>checkDoor(d).ok);p.wins=p.wins.filter(w=>checkWin(w).ok);p.outs=p.outs.filter(o=>checkOut(o).ok);return before-p.doors.length-p.wins.length-p.outs.length-p.opens.length;}
+let winLen=3;
+function winSides(w,W,H){const A=[],B=[];for(let k=0;k<w.len;k++){if(w.o==='h'){const x=w.x+k;A.push(w.y-1>=0?(w.y-1)*W+x:-1);B.push(w.y<H?w.y*W+x:-1);}else{const y=w.y+k;A.push(w.x-1>=0?y*W+w.x-1:-1);B.push(w.x<W?y*W+w.x:-1);}}return{A,B};}
+function checkWin(w){const s=S(),p=P(),W=s.W,H=s.H;const {A,B}=winSides(w,W,H);const ty=i=>i<0?null:p.cells[i];
+  const as=A.map(ty),bs=B.map(ty);
+  if(as.some(t=>t!==as[0])||bs.some(t=>t!==bs[0]))return{ok:false,why:'창문 길이('+(w.len/2).toFixed(1)+'m) 전체가 한 방의 바깥 벽에 있어야 해요. 폭을 줄이거나 옮겨 보세요.'};
+  const ta=as[0],tb=bs[0];
+  if(ta&&tb)return{ok:false,why:'창문은 집 바깥과 맞닿은 굵은 외벽에만 달 수 있어요.'};
+  if(!ta&&!tb)return{ok:false,why:'빈 칸이에요. 먼저 공간을 그리세요.'};
+  return{ok:true,room:ta||tb};}
+function winClash(w){const p=P(),seg=e=>e.o==='h'?[e.y,e.x,e.x+(e.len||2)]:[e.x,e.y,e.y+(e.len||2)];const [b,a0,a1]=seg(w);
+  return p.wins.concat(p.doors).some(e=>{if(e.o!==w.o)return false;const [eb,e0,e1]=seg(e);return eb===b&&e0<a1&&a0<e1;});}
+function winCands(px,py,len){const s=S(),W=s.W,H=s.H,fx=px/CS,fy=py/CS,out=[];
+  for(const o of ['h','v']){const pc=o==='h'?fy:fx,al=o==='h'?fx:fy,lim=o==='h'?H:W,max=o==='h'?W:H;
+    for(let b=Math.round(pc)-1;b<=Math.round(pc)+1;b++){if(b<0||b>lim)continue;
+      for(let st=Math.floor(al)-len;st<=Math.floor(al)+1;st++){if(st<0||st>max-len)continue;
+        const along=al<st?st-al:(al>st+len?al-st-len:0),dist=Math.hypot(along,b-pc);if(dist>1.2)continue;
+        const mid=st+Math.floor(len/2),cl=P().cells,ca=o==='h'?(b-1>=0?cl[(b-1)*W+mid]:null):(b-1>=0?cl[mid*W+b-1]:null),cb=o==='h'?(b<H?cl[b*W+mid]:null):(b<W?cl[mid*W+b]:null),wall=ca!==cb;
+        out.push({w:o==='h'?{o,x:st,y:b,len}:{o,x:b,y:st,len},dist:dist+(wall?0:3),c:Math.abs(st+len/2-al)});}}}
+  return out.sort((x,y)=>x.dist-y.dist||x.c-y.c);}
+function findWin(px,py){let first=null;for(const c of winCands(px,py,winLen)){if(winClash(c.w)){if(!first)first='문이나 다른 창문과 겹쳐요.';continue;}const r=checkWin(c.w);if(r.ok)return{w:c.w,r};if(!first)first=r.why;}return{why:first};}
+function hitWin(px,py){const fx=px/CS,fy=py/CS;return P().wins.findIndex(w=>{const pc=w.o==='h'?fy:fx,al=w.o==='h'?fx:fy,b=w.o==='h'?w.y:w.x,st=w.o==='h'?w.x:w.y;return Math.abs(pc-b)<0.6&&al>=st-0.2&&al<=st+w.len+0.2;});}
+function winTap(px,py){const p=P();const hit=hitWin(px,py);
+  if(hit>=0){push();p.wins.splice(hit,1);msg('창문을 뗐어요.','ok');render();return;}
+  const f=findWin(px,py);
+  if(f.w){push();p.wins.push(f.w);msg((types()[f.r.room]?types()[f.r.room].name:'')+'에 창문을 달았어요(폭 '+(f.w.len/2).toFixed(1)+'m).','ok');render();return;}
+  msg((f.why||'여기에는 창문을 달 수 없어요.')+' 집 바깥쪽 굵은 벽을 눌러 보세요.','warn');flashBad(px,py);}
+function winPreview(px,py){if(!dpv)return;if(px===null){dpv.setAttribute('visibility','hidden');return;}
+  if(hitWin(px,py)>=0){dpv.setAttribute('visibility','hidden');svg.style.cursor='pointer';return;}
+  const f=findWin(px,py);if(!f.w){dpv.setAttribute('visibility','hidden');svg.style.cursor='not-allowed';return;}
+  svg.style.cursor='pointer';const w=f.w,X=w.x*CS,Y=w.y*CS,L=w.len*CS;
+  dpv.setAttribute('x',w.o==='h'?X:X-4);dpv.setAttribute('y',w.o==='h'?Y-4:Y);dpv.setAttribute('width',w.o==='h'?L:8);dpv.setAttribute('height',w.o==='h'?8:L);dpv.setAttribute('visibility','visible');}
+
+/* ---------- 분석 ---------- */
+function analyze(){
+  const s=S(),p=P(),W=s.W,H=s.H,cells=p.cells,T=types();
+  const walk=new Set([...OPEN,...(s.walkExtra||[])]);
+  const ck=new Set();(p.closes||[]).forEach(c=>{for(let k=0;k<c.len;k++)ck.add(c.o==='h'?'h,'+(c.x+k)+','+c.y:'v,'+c.x+','+(c.y+k));});
+  const doors=p.doors||[];const dk=new Set();doors.concat(p.opens||[]).forEach(d=>{for(let k=0;k<DL(d);k++){if(d.o==='h')dk.add('h,'+(d.x+k)+','+d.y);else dk.add('v,'+d.x+','+(d.y+k));}});
+  const ekey=(i,j)=>{const a=Math.min(i,j),b=Math.max(i,j),x=a%W,y=(a/W)|0;return b-a===1?'v,'+(x+1)+','+y:'h,'+x+','+(y+1);};
+  const pass=(i,j)=>{const a=cells[i],b=cells[j];if(!a||!b)return false;if(a===b)return true;if(walk.has(a)&&walk.has(b)&&!ck.has(ekey(i,j)))return true;return dk.has(ekey(i,j));};
+  const occ=new Array(W*H).fill(-1);p.furn.forEach((f,i)=>{for(let y=f.y;y<f.y+f.h;y++)for(let x=f.x;x<f.x+f.w;x++)occ[y*W+x]=i;});
+  const by={};cells.forEach((t,i)=>{if(t)(by[t]=by[t]||[]).push(i);});
+  const nb=i=>{const x=i%W,y=(i/W)|0,r=[];if(x>0)r.push(i-1);if(x<W-1)r.push(i+1);if(y>0)r.push(i-W);if(y<H-1)r.push(i+W);return r;};
+  const comps=t=>{const seen=new Set(),out=[];(by[t]||[]).forEach(i=>{if(seen.has(i))return;const q=[i],c=[];seen.add(i);while(q.length){const k=q.pop();c.push(k);nb(k).forEach(n=>{if(!seen.has(n)&&cells[n]===t){seen.add(n);q.push(n);}});}out.push(c);});return out;};
+  const A={W,H,by,T,occ,comps,
+    has:t=>!!by[t],
+    names:arr=>arr.map(t=>T[t]?T[t].name:t).join(', '),
+    area:t=>(by[t]||[]).length*0.25,
+    count:t=>comps(t).length,
+    adj:(a,b)=>(by[a]||[]).some(i=>nb(i).some(n=>cells[n]===b)),
+    touchesSet:(a,set)=>(by[a]||[]).some(i=>nb(i).some(n=>cells[n]&&cells[n]!==a&&set.has(cells[n]))),
+    edge:(t,side)=>(by[t]||[]).some(i=>{const x=i%W,y=(i/W)|0;if(side==='S')return y===H-1;return x===0||y===0||x===W-1||y===H-1;}),
+    dist:(a,b)=>{const d=new Map(),q=[];(by[a]||[]).forEach(i=>{d.set(i,0);q.push(i);});
+      for(let h=0;h<q.length;h++){const k=q[h];for(const n of nb(k)){if(d.has(n)||!pass(k,n))continue;const t=cells[n];if(t===b)return d.get(k)*0.5;if(t===a||walk.has(t)){d.set(n,d.get(k)+1);q.push(n);}}}return Infinity;},
+    free:(t,n)=>{for(let y=0;y<=H-n;y++)for(let x=0;x<=W-n;x++){let ok=true;for(let dy=0;dy<n&&ok;dy++)for(let dx=0;dx<n&&ok;dx++){const i=(y+dy)*W+x+dx;if(cells[i]!==t||occ[i]>=0)ok=false;}if(ok)return true;}return false;},
+    hallWidth:()=>{let min=Infinity;(by.hall||[]).forEach(i=>{const x=i%W,y=(i/W)|0;let h=1,v=1;for(let k=x-1;k>=0&&cells[y*W+k]==='hall';k--)h++;for(let k=x+1;k<W&&cells[y*W+k]==='hall';k++)h++;for(let k=y-1;k>=0&&cells[k*W+x]==='hall';k--)v++;for(let k=y+1;k<H&&cells[k*W+x]==='hall';k++)v++;min=Math.min(min,h,v);});return min*0.5;},
+    furnRoom:f=>{let t=undefined;for(let y=f.y;y<f.y+f.h;y++)for(let x=f.x;x<f.x+f.w;x++){const c=cells[y*W+x];if(t===undefined)t=c;else if(t!==c)return null;}return t||null;},
+    furnIn:(t,kinds)=>p.furn.some(f=>kinds.includes(f.k)&&A.furnRoom(f)===t),
+    walk,nb,pass,
+    hasDoor:t=>(by[t]||[]).some(i=>nb(i).some(n=>cells[n]!==t&&dk.has(ekey(i,n)))),
+    reach:through=>{const R=new Set(),q=[];(by.entry||[]).forEach(i=>{R.add(i);q.push(i);});for(let h=0;h<q.length;h++){const k=q[h];for(const n of nb(k)){if(R.has(n)||!pass(k,n))continue;if(through||walk.has(cells[n])){R.add(n);q.push(n);}}}return R;},
+    extDoorOf:d=>{const sd=doorSides(d,W,H);const ta=sd.A[0]<0?null:cells[sd.A[0]],tb=sd.B[0]<0?null:cells[sd.B[0]];return !ta||!tb;},
+    extDoor:()=>doors.some(d=>{const sd=doorSides(d,W,H);const ta=sd.A[0]<0?null:cells[sd.A[0]],tb=sd.B[0]<0?null:cells[sd.B[0]];return (sd.A[0]<0&&tb==='entry')||(sd.B[0]<0&&ta==='entry');}),
+    blocked:()=>doors.filter(d=>swingCells(d,W,H).some(i=>occ[i]>=0)),
+    doorRoom:d=>{const sd=doorSides(d,W,H),c=d.s==='a'?sd.A[0]:sd.B[0],o=d.s==='a'?sd.B[0]:sd.A[0];const t=c>=0?cells[c]:null;return t||(o>=0?cells[o]:null);}
+  };
+  return A;
+}
+
+/* ---------- 그리기 ---------- */
+const svg=document.getElementById('plan'),NS='http://www.w3.org/2000/svg';
+function el(t,a,parent){const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);(parent||svg).appendChild(e);return e;}
+function txt(x,y,s,o,parent){const e=el('text',Object.assign({x,y,'text-anchor':'middle','dominant-baseline':'central','font-family':'Noto Sans KR, Apple SD Gothic Neo, Malgun Gothic, sans-serif'},o),parent);e.textContent=s;return e;}
+let pv=null;
+function render(){
+  const s=S(),p=P(),W=s.W,H=s.H,T=types(),A=analyze(),OS=openSet();
+  const C={ink:css('--ink'),muted:css('--muted'),sheet:css('--sheet'),grid:css('--grid'),accent:css('--accent'),line:css('--line')};
+  svg.innerHTML='';svg.setAttribute('viewBox',`${-M} ${-M} ${W*CS+2*M} ${H*CS+2*M}`);
+  el('rect',{x:-M,y:-M,width:W*CS+2*M,height:H*CS+2*M,fill:C.sheet});
+  // 모눈
+  let gd='';for(let x=0;x<=W;x++)gd+=`M${x*CS} 0V${H*CS}`;for(let y=0;y<=H;y++)gd+=`M0 ${y*CS}H${W*CS}`;
+  el('path',{d:gd,stroke:C.grid,'stroke-width':1,fill:'none'});
+  for(let x=0;x<=W;x+=2)el('line',{x1:x*CS,y1:0,x2:x*CS,y2:H*CS,stroke:C.line,'stroke-width':0.6});
+  for(let y=0;y<=H;y+=2)el('line',{x1:0,y1:y*CS,x2:W*CS,y2:y*CS,stroke:C.line,'stroke-width':0.6});
+  // 칸 칠하기
+  const g=el('g',{});
+  p.cells.forEach((t,i)=>{if(!t||!T[t])return;el('rect',{x:(i%W)*CS,y:((i/W)|0)*CS,width:CS+0.5,height:CS+0.5,fill:css('--z-'+T[t].zone+'-soft')},g);});
+  // 벽
+  let ext='',inner='',weak='';const OK=new Set(),CK=new Set();(p.opens||[]).forEach(o=>{for(let k=0;k<o.len;k++)OK.add(o.o==='h'?'h,'+(o.x+k)+','+o.y:'v,'+o.x+','+(o.y+k));});(p.closes||[]).forEach(o=>{for(let k=0;k<o.len;k++)CK.add(o.o==='h'?'h,'+(o.x+k)+','+o.y:'v,'+o.x+','+(o.y+k));});
+  p.cells.forEach((t,i)=>{if(!t)return;const x=i%W,y=(i/W)|0,X=x*CS,Y=y*CS;
+    const side=(n,seg,owns,key)=>{const u=n===null?null:p.cells[n];if(u===t)return;if(u&&!owns)return;
+      if(!u)ext+=seg;else if((OS.has(t)&&OS.has(u)&&!CK.has(key))||OK.has(key))weak+=seg;else inner+=seg;};
+    side(x>0?i-1:null,`M${X} ${Y}V${Y+CS}`,false,'v,'+x+','+y);side(y>0?i-W:null,`M${X} ${Y}H${X+CS}`,false,'h,'+x+','+y);
+    side(x<W-1?i+1:null,`M${X+CS} ${Y}V${Y+CS}`,true,'v,'+(x+1)+','+y);side(y<H-1?i+W:null,`M${X} ${Y+CS}H${X+CS}`,true,'h,'+x+','+(y+1));});
+  el('path',{d:weak,stroke:C.muted,'stroke-width':1.2,'stroke-dasharray':'3 3',fill:'none'});
+  el('path',{d:inner,stroke:C.ink,'stroke-width':3,'stroke-linecap':'square',fill:'none'});
+  el('path',{d:inner,stroke:C.sheet,'stroke-width':1.1,'stroke-linecap':'butt',fill:'none'});
+  el('path',{d:ext,stroke:C.ink,'stroke-width':3,'stroke-linecap':'square',fill:'none'});
+  // 창문
+  p.wins.forEach(w=>{const X=w.x*CS,Y=w.y*CS,L=w.len*CS;
+    if(w.o==='h'){el('rect',{x:X,y:Y-2.5,width:L,height:5,fill:C.sheet,stroke:C.ink,'stroke-width':0.9});el('line',{x1:X,y1:Y,x2:X+L,y2:Y,stroke:C.ink,'stroke-width':0.7});}
+    else{el('rect',{x:X-2.5,y:Y,width:5,height:L,fill:C.sheet,stroke:C.ink,'stroke-width':0.9});el('line',{x1:X,y1:Y,x2:X,y2:Y+L,stroke:C.ink,'stroke-width':0.7});}});
+  // 가구
+  p.furn.forEach(f=>{const F=FURN[f.k],X=f.x*CS,Y=f.y*CS,w=f.w*CS,h=f.h*CS;
+    if(f.k==='chair'){const r=f.r||0,g=el('g',{transform:`rotate(${r*90} ${X+CS/2} ${Y+CS/2})`});
+      el('rect',{x:X+4,y:Y+5,width:CS-8,height:CS-9,rx:2.5,fill:C.sheet,stroke:C.ink,'stroke-width':1.3},g);
+      el('line',{x1:X+3.5,y1:Y+3,x2:X+CS-3.5,y2:Y+3,stroke:C.ink,'stroke-width':2.6,'stroke-linecap':'round'},g);
+      el('title',{},g).textContent='의자';return;}
+    el('rect',{x:X+2,y:Y+2,width:w-4,height:h-4,rx:3,fill:C.sheet,stroke:C.ink,'stroke-width':1.4});
+    if(BEDS.includes(f.k)){const pil=Math.min(w,h)*0.22;if(f.h>=f.w)el('rect',{x:X+5,y:Y+5,width:w-10,height:pil,rx:2,fill:'none',stroke:C.muted,'stroke-width':1});else el('rect',{x:X+5,y:Y+5,width:pil,height:h-10,rx:2,fill:'none',stroke:C.muted,'stroke-width':1});}
+    const big=(f.w>=3||(f.w>=2&&f.h>=2)), lbl=big?F.name:F.ab;
+    const t=txt(X+w/2,Y+h/2+(BEDS.includes(f.k)&&f.h>=f.w?4:0),lbl,{'font-size':9.5,fill:C.ink,'font-weight':500});
+    if(f.h>f.w*1.5&&!big)t.setAttribute('font-size',8.5);
+  });
+  // 콘센트
+  p.outs.forEach(o=>{const c=outCenter(o),ang=o.o==='h'?(o.s==='a'?0:180):(o.s==='a'?-90:90),g=el('g',{transform:`rotate(${ang} ${c[0]} ${c[1]})`});
+    el('circle',{cx:c[0],cy:c[1],r:4.6,fill:C.sheet,stroke:C.ink,'stroke-width':1.3},g);
+    el('path',{d:`M${c[0]-4.6} ${c[1]}A4.6 4.6 0 0 0 ${c[0]+4.6} ${c[1]}Z`,fill:C.ink},g);
+    el('title',{},g).textContent='콘센트';});
+  // 문
+  const blk=new Set(A.blocked());
+  p.doors.forEach(d=>{const n=DL(d),L=n*CS,X=d.x*CS,Y=d.y*CS,dir=d.s==='a'?-1:1,col=blk.has(d)?css('--warn'):C.ink;
+    const ew=A.extDoorOf(d)?4.5:4;
+    // 벽 지우기
+    if(d.o==='h')el('line',{x1:X+2,y1:Y,x2:X+L-2,y2:Y,stroke:C.sheet,'stroke-width':ew});else el('line',{x1:X,y1:Y+2,x2:X,y2:Y+L-2,stroke:C.sheet,'stroke-width':ew});
+    // 문짝: [경첩 위치, 문짝 길이, 닫힌 쪽 방향(+1/-1)]
+    const leaves=n===4?[[0,2*CS,1],[L,2*CS,-1]]:[[0,L,1]];
+    leaves.forEach(([h,len,sg])=>{
+      if(d.o==='h'){const hx=X+h,ex=hx+sg*len,sweep=(dir>0)===(sg>0)?1:0;
+        el('path',{d:`M${ex} ${Y}A${len} ${len} 0 0 ${sweep} ${hx} ${Y+dir*len}`,fill:'none',stroke:col,'stroke-width':1.2});
+        el('line',{x1:hx,y1:Y,x2:hx,y2:Y+dir*len,stroke:col,'stroke-width':2,'stroke-linecap':'square'});}
+      else{const hy=Y+h,ey=hy+sg*len,sweep=(dir>0)===(sg>0)?0:1;
+        el('path',{d:`M${X} ${ey}A${len} ${len} 0 0 ${sweep} ${X+dir*len} ${hy}`,fill:'none',stroke:col,'stroke-width':1.2});
+        el('line',{x1:X,y1:hy,x2:X+dir*len,y2:hy,stroke:col,'stroke-width':2,'stroke-linecap':'square'});}});
+  });
+  // 방 이름 · 넓이
+  Object.keys(A.by).forEach(t=>{if(!T[t])return;A.comps(t).forEach(c=>{
+    let sx=0,sy=0;c.forEach(i=>{sx+=i%W;sy+=(i/W)|0;});sx/=c.length;sy/=c.length;
+    let best=c[0],bd=1e9;c.forEach(i=>{const d=(i%W-sx)**2+(((i/W)|0)-sy)**2;let free=0;for(let dy=-1;dy<=1;dy++)for(let dx=-2;dx<=2;dx++){const xx=i%W+dx,yy=((i/W)|0)+dy;if(xx<0||yy<0||xx>=W||yy>=H)continue;const j=yy*W+xx;if(A.occ[j]>=0)free+=(dx===0&&dy===0)?40:6;}{const x0=i%W,y0=(i/W)|0;for(const [ax,ay] of [[-2,0],[2,0],[0,-1],[0,1]]){const xx=x0+ax,yy=y0+ay;if(xx<0||yy<0||xx>=W||yy>=H||P().cells[yy*W+xx]!==t)free+=10;}}if(d+free<bd){bd=d+free;best=i;}});
+    const cx=(best%W)*CS+CS/2,cy=((best/W)|0)*CS+CS/2,col=css('--z-'+T[t].zone);
+    const small=c.length<6;
+    const bg=el('rect',{x:cx-30,y:cy-(small?8:13),width:60,height:small?16:27,rx:4,fill:C.sheet,opacity:0.85});
+    const n=txt(cx,small?cy:cy-5,T[t].name,{'font-size':small?9.5:11.5,'font-weight':700,fill:C.ink});
+    if(!small)txt(cx,cy+7.5,(c.length*0.25).toFixed(1)+'㎡',{'font-size':9,fill:col,'font-family':'IBM Plex Mono, ui-monospace, monospace'});
+    try{const bw=Math.max(n.getComputedTextLength()+10,small?28:46);bg.setAttribute('x',cx-bw/2);bg.setAttribute('width',bw);}catch(e){}
+  });});
+  // 대지 경계 · 방위 · 축척
+  el('rect',{x:0,y:0,width:W*CS,height:H*CS,fill:'none',stroke:C.muted,'stroke-width':1,'stroke-dasharray':'6 4'});
+  txt(W*CS/2,-M/2,'북 ↑  ·  '+(W/2).toFixed(1)+' m',{'font-size':10,fill:C.muted});
+  txt(W*CS-50,H*CS+M-10,'남 · 햇볕 드는 쪽',{'font-size':10,fill:C.muted});
+  const sy=-M/2;el('line',{x1:0,y1:sy,x2:2*CS,y2:sy,stroke:C.ink,'stroke-width':2});
+  el('line',{x1:0,y1:sy-4,x2:0,y2:sy+4,stroke:C.ink,'stroke-width':2});el('line',{x1:2*CS,y1:sy-4,x2:2*CS,y2:sy+4,stroke:C.ink,'stroke-width':2});
+  txt(CS,sy-9,'1m',{'font-size':9,fill:C.ink,'font-family':'IBM Plex Mono, ui-monospace, monospace'});
+  const tv=txt(-M/2,H*CS/2,(H/2).toFixed(1)+' m',{'font-size':10,fill:C.muted});tv.setAttribute('transform',`rotate(-90 ${-M/2} ${H*CS/2})`);
+  if(!p.cells.some(Boolean)&&!p.furn.length){
+    el('rect',{x:W*CS/2-150,y:H*CS/2-22,width:300,height:44,rx:8,fill:C.sheet,stroke:C.line});
+    txt(W*CS/2,H*CS/2-7,'위에서 공간을 고르고',{'font-size':12,fill:C.ink});
+    txt(W*CS/2,H*CS/2+10,'도면 위를 끌어서 방을 그려 보세요',{'font-size':12,fill:C.ink});
+  }
+  dpv=el('rect',{x:0,y:0,width:0,height:0,rx:3,fill:css('--ok'),'fill-opacity':0.55,visibility:'hidden','pointer-events':'none'});
+  pv=el('rect',{x:0,y:0,width:0,height:0,fill:C.accent,'fill-opacity':0.25,stroke:C.accent,'stroke-width':2,visibility:'hidden','pointer-events':'none'});
+  evaluate(A);
+  save();
+}
+
+/* ---------- 점검 ---------- */
+function li(ul,cls,mk,b,d){const l=document.createElement('li');l.className=cls;l.innerHTML=`<span class="mk">${mk}</span><span><b></b><span class="d"></span></span>`;l.querySelector('b').textContent=b;l.querySelector('.d').textContent=d||'';ul.appendChild(l);}
+let lastResults=[];
+function evaluate(A){
+  const s=S(),T=A.T,ul1=document.getElementById('checksScen'),ul2=document.getElementById('checksBase');ul1.innerHTML='';ul2.innerHTML='';
+  lastResults=[];let ok=0,tot=0;
+  s.checks.forEach(c=>{const miss=c.need.filter(t=>!A.has(t));
+    if(miss.length){li(ul1,'wait','·',c.t,A.names(miss)+'을(를) 그리면 확인할 수 있어요.');lastResults.push('· '+c.t+' (미확인)');tot++;return;}
+    const [r,d]=c.f(A);if(r===null){li(ul1,'wait','·',c.t,d);return;}tot++;if(r)ok++;
+    li(ul1,r?'ok':'warn',r?'✓':'!',c.t,d);lastResults.push((r?'✓ ':'✗ ')+c.t+' — '+d);});
+  document.getElementById('score').innerHTML=`<b>${ok} / ${tot}</b><span class="small muted">조건 충족</span>`;
+  // 기본 점검
+  const missing=s.req.filter(t=>!A.has(t));
+  li(ul2,missing.length?'warn':'ok',missing.length?'!':'✓','필요한 공간',missing.length?'아직 없음: '+A.names(missing):'모두 그렸어요.');
+  const rooms=Object.keys(A.by).filter(t=>T[t]&&!A.walk.has(t));
+  if(rooms.length&&A.has('entry')){const R1=A.reach(false),R2=A.reach(true);const noDoor=[],cut=[],via=[];
+    rooms.forEach(t=>{const direct=A.by[t].some(i=>A.nb(i).some(n=>R1.has(n)&&A.pass(i,n)));if(direct)return;
+      if(!A.hasDoor(t))noDoor.push(t);else if(!A.by[t].some(i=>R2.has(i)))cut.push(t);else if(t!=='bath')via.push(t);});
+    const parts=[];if(noDoor.length)parts.push('문 없음: '+A.names(noDoor));if(cut.length)parts.push('현관에서 갈 수 없음: '+A.names(cut));if(via.length)parts.push('다른 방을 지나야 함: '+A.names(via));
+    li(ul2,parts.length?'warn':'ok',parts.length?'!':'✓','드나들 수 있는가',parts.length?parts.join(' · '):'현관에서 모든 방까지 문을 지나 갈 수 있어요.');}
+  else if(rooms.length)li(ul2,'wait','·','드나들 수 있는가','현관을 그리면 확인해요.');
+  if(A.has('entry')){const ex=A.extDoor();li(ul2,ex?'ok':'warn',ex?'✓':'!','현관문',ex?'바깥으로 나가는 문이 있어요.':(A.edge('entry')?'문 달기로 현관의 바깥 벽에 현관문을 다세요.':'현관이 바깥 벽에 닿아야 해요.'));}
+  {const p=P(),wr=new Set(p.wins.map(w=>checkWin(w).room).filter(Boolean));const need=Object.keys(A.by).filter(t=>T[t]&&(T[t].zone==='private'||t==='living'));
+    if(need.length){const no=need.filter(t=>!wr.has(t));li(ul2,no.length?'warn':'ok',no.length?'!':'✓','채광·환기 창문',no.length?'창문 없음: '+A.names(no)+' · 외벽에 창문을 달아 보세요.':'모든 방과 거실에 창문이 있어요.');}}
+  {const p=P(),orr=new Set(p.outs.map(o=>checkOut(o).room).filter(Boolean));const need=Object.keys(A.by).filter(t=>T[t]&&(T[t].zone==='private'||t==='living'||t==='kitchen'));
+    if(need.length){const no=need.filter(t=>!orr.has(t));li(ul2,no.length?'warn':'ok',no.length?'!':'✓','콘센트',no.length?'콘센트 없음: '+A.names(no)+' · 가전제품을 어디에 둘지 생각해 보세요.':'방·거실·부엌마다 콘센트가 있어요.');}}
+  const bl=A.blocked();if(bl.length)li(ul2,'warn','!','열리지 않는 문',[...new Set(bl.map(d=>T[A.doorRoom(d)]?T[A.doorRoom(d)].name:'현관'))].join(', ')+' 문이 열리는 자리에 가구가 있어요. 빨간 문을 확인하세요.');
+  const split=Object.keys(A.by).filter(t=>T[t]&&t!=='bath'&&A.count(t)>1);
+  if(split.length)li(ul2,'warn','!','조각난 공간',A.names(split)+'이(가) 떨어진 두 곳 이상으로 나뉘었어요.');
+  const strad=P().furn.filter(f=>!A.furnRoom(f));
+  if(strad.length)li(ul2,'warn','!','벽에 걸친 가구',strad.map(f=>FURN[f.k].name).join(', ')+'이(가) 벽에 걸쳐 있거나 빈 칸에 있어요.');
+  const empty=P().cells.filter(c=>!c).length*0.25;
+  if(empty>0&&A.has('entry'))li(ul2,'wait','i','빈 칸',empty.toFixed(1)+'㎡가 비어 있어요. 발코니나 수납으로 쓸지 생각해 보세요.');
+}
+
+/* ---------- UI 구성 ---------- */
+function buildScen(){const box=document.getElementById('scenList');box.innerHTML='';
+  SC.forEach((s,i)=>{const b=document.createElement('button');b.type='button';b.className='scen';b.setAttribute('aria-pressed',s.id===sid);
+    b.innerHTML=`<span class="no">상황 ${i+1}</span><b></b><span class="who"></span>`;b.querySelector('b').textContent=s.title;b.querySelector('.who').textContent=s.who;
+    b.addEventListener('click',()=>{sid=s.id;hist=[];tool={kind:'room',id:S().base.includes('living')?'living':'room'};msg('');buildAll();});box.appendChild(b);});}
+function buildBrief(){const s=S(),T=types(),b=document.getElementById('brief');
+  b.innerHTML=`<h2></h2><div class="who"></div><div class="facts"><span>대지 <b>${(s.W/2).toFixed(1)}m × ${(s.H/2).toFixed(1)}m</b></span><span>넓이 <b>${(s.W*s.H/4).toFixed(0)}㎡</b></span><span>한 칸 <b>0.5m</b></span></div><div class="tags"></div>`;
+  b.querySelector('h2').textContent=s.title;b.querySelector('.who').textContent='가족: '+s.who;
+  const tg=b.querySelector('.tags');s.req.forEach(t=>{const sp=document.createElement('span');sp.className='tag z-'+T[t].zone;sp.textContent=T[t].name;tg.appendChild(sp);});}
+function buildTools(){const T=types(),r=document.getElementById('roomTools'),f=document.getElementById('furnTools');r.innerHTML='';f.innerHTML='';
+  const mk=(parent,label,cls,active,on,extra)=>{const b=document.createElement('button');b.type='button';b.className='tool '+cls;b.setAttribute('aria-pressed',active);b.innerHTML=(cls.startsWith('z-')?'<i></i>':'')+'<span></span>'+(extra?'<small>'+extra+'</small>':'');b.querySelector('span').textContent=label;b.addEventListener('click',on);parent.appendChild(b);};
+  Object.keys(T).forEach(id=>mk(r,T[id].name,'z-'+T[id].zone,tool.kind==='room'&&tool.id===id,()=>{tool={kind:'room',id};buildTools();svg.style.cursor='';msg(T[id].name+' 선택 · 도면을 끌어 칠하세요.');}));
+  const o=document.getElementById('openTools');o.innerHTML='';
+  mk(o,'여닫이문','',tool.kind==='door',()=>{tool={kind:'door'};buildTools();svg.style.cursor='';msg('벽(실선)을 누르면 가장 가까운 자리에 문이 달려요. 문 폭은 옆에서 고를 수 있어요.');},(doorLen/2).toFixed(1)+'m');
+  if(tool.kind==='door'){const sp=document.createElement('span');sp.className='sep';sp.textContent='문 폭';o.appendChild(sp);
+    [[2,'1.0m'],[3,'1.5m'],[4,'2.0m 양문']].forEach(([n,lb])=>mk(o,lb,'',doorLen===n,()=>{doorLen=n;buildTools();msg('문 폭 '+lb+' · 벽을 누르세요.');}));}
+  mk(o,'창문','',tool.kind==='win',()=>{tool={kind:'win'};buildTools();svg.style.cursor='';msg('집 바깥쪽 굵은 외벽을 누르세요. 창문 폭은 옆에서 고를 수 있어요.');},(winLen/2).toFixed(1)+'m');
+  if(tool.kind==='win'){const sp=document.createElement('span');sp.className='sep';sp.textContent='창 폭';o.appendChild(sp);
+    [2,3,4,6].forEach(n=>mk(o,(n/2).toFixed(1)+'m','',winLen===n,()=>{winLen=n;buildTools();msg('창문 폭 '+(n/2).toFixed(1)+'m · 외벽을 누르세요.');}));}
+  mk(o,'열린 경계','',tool.kind==='open',()=>{tool={kind:'open'};buildTools();svg.style.cursor='';msg('실선 벽을 누르면 트여서 점선이 되고, 점선을 누르면 벽이 세워져요. 폭은 옆에서 고를 수 있어요.');},opLen?(opLen/2).toFixed(1)+'m':'벽 전체');
+  if(tool.kind==='open'){const sp=document.createElement('span');sp.className='sep';sp.textContent='트는 폭';o.appendChild(sp);
+    [[2,'1.0m'],[3,'1.5m'],[4,'2.0m'],[6,'3.0m'],[0,'벽 전체']].forEach(([n,lb])=>mk(o,lb,'',opLen===n,()=>{opLen=n;buildTools();msg('폭 '+lb+' · 실선 벽은 트고, 점선에는 벽을 세워요.');}));}
+  mk(o,'콘센트','',tool.kind==='out',()=>{tool={kind:'out'};buildTools();svg.style.cursor='';msg('콘센트를 달 벽에서 방 쪽 가까이를 누르세요. 누른 쪽 방의 벽면에 붙어요.');});
+  mk(r,'지우개','',tool.kind==='erase',()=>{tool={kind:'erase'};buildTools();msg('지울 범위를 끌거나 가구를 누르세요.');});
+  Object.keys(FURN).forEach(k=>{const F=FURN[k];mk(f,F.name,'',tool.kind==='furn'&&tool.k===k,()=>{tool={kind:'furn',k};buildTools();msg(F.name+' · 빈 곳을 누르면 놓여요. 놓인 가구는 끌어서 옮길 수 있어요.');},(F.w/2).toFixed(1)+'×'+(F.h/2).toFixed(1));});
+  document.getElementById('sample').hidden=sid!=='family4';}
+function buildThink(){const s=S(),box=document.getElementById('think');box.innerHTML='<h2>생각해 보기</h2>';notes[sid]=notes[sid]||{};
+  s.think.forEach((q,i)=>{const id='th-'+sid+'-'+i;const l=document.createElement('label');l.setAttribute('for',id);l.textContent=q;
+    const t=document.createElement('textarea');t.id=id;t.value=notes[sid][i]||'';t.addEventListener('input',()=>{notes[sid][i]=t.value;save();});box.appendChild(l);box.appendChild(t);});}
+function buildAll(){buildScen();buildBrief();buildTools();buildThink();document.getElementById('imgout').innerHTML='';render();}
+
+/* ---------- 포인터 ---------- */
+function cellAt(e,clamp){const s=S(),pt=svg.createSVGPoint();pt.x=e.clientX;pt.y=e.clientY;const q=pt.matrixTransform(svg.getScreenCTM().inverse());
+  let x=Math.floor(q.x/CS),y=Math.floor(q.y/CS);if(clamp){x=Math.max(0,Math.min(s.W-1,x));y=Math.max(0,Math.min(s.H-1,y));return{x,y};}
+  if(x<0||y<0||x>=s.W||y>=s.H)return null;return{x,y};}
+function showPv(){if(!drag||!pv)return;const x=Math.min(drag.x0,drag.x1),y=Math.min(drag.y0,drag.y1),w=Math.abs(drag.x1-drag.x0)+1,h=Math.abs(drag.y1-drag.y0)+1;
+  let X=x,Y=y,ww=w,hh=h;if(tool.kind==='furn'){const F=FURN[tool.k];X=drag.x0;Y=drag.y0;ww=F.w;hh=F.h;}
+  pv.setAttribute('x',X*CS);pv.setAttribute('y',Y*CS);pv.setAttribute('width',ww*CS);pv.setAttribute('height',hh*CS);pv.setAttribute('visibility','visible');
+  if(tool.kind!=='furn')msg((w/2).toFixed(1)+'m × '+(h/2).toFixed(1)+'m = '+(w*h/4).toFixed(2)+'㎡');}
+function rawPt(e){const pt=svg.createSVGPoint();pt.x=e.clientX;pt.y=e.clientY;return pt.matrixTransform(svg.getScreenCTM().inverse());}
+svg.addEventListener('pointerdown',e=>{if(tool.kind==='door'||tool.kind==='win'||tool.kind==='out'||tool.kind==='open'){e.preventDefault();const q=rawPt(e),s=S();if(q.x<-CS||q.y<-CS||q.x>s.W*CS+CS||q.y>s.H*CS+CS)return;({door:doorTap,win:winTap,out:outTap,open:openTap})[tool.kind](q.x,q.y);return;}const c=cellAt(e);if(!c)return;e.preventDefault();try{svg.setPointerCapture(e.pointerId);}catch(_){}
+  if(tool.kind==='furn'){const fi=furnAt(c.x,c.y);if(fi>=0){const f=P().furn[fi];drag={move:fi,snap:JSON.stringify(P()),ox:c.x-f.x,oy:c.y-f.y,sx:f.x,sy:f.y,x0:c.x,y0:c.y,room:analyze().furnRoom(f),moved:false};svg.style.cursor='grabbing';return;}}
+  drag={x0:c.x,y0:c.y,x1:c.x,y1:c.y};showPv();});
+function fitsRoom(f,t){const s=S(),p=P();if(f.x<0||f.y<0||f.x+f.w>s.W||f.y+f.h>s.H)return false;if(!t)return true;for(let y=f.y;y<f.y+f.h;y++)for(let x=f.x;x<f.x+f.w;x++)if(p.cells[y*s.W+x]!==t)return false;return true;}
+function moveDrag(e){const c=cellAt(e,true),p=P(),f=p.furn[drag.move];if(!f)return;
+  const nx=c.x-drag.ox,ny=c.y-drag.oy;if(nx===f.x&&ny===f.y)return;
+  const cand=[{x:nx,y:ny},{x:nx,y:f.y},{x:f.x,y:ny}];
+  for(const q of cand){if(q.x===f.x&&q.y===f.y)continue;const nf={k:f.k,x:q.x,y:q.y,w:f.w,h:f.h};
+    if(fitsRoom(nf,drag.room)&&!overlaps(nf,drag.move)){f.x=q.x;f.y=q.y;drag.moved=true;render();msg(FURN[f.k].name+' 옮기는 중 · '+(drag.room&&types()[drag.room]?types()[drag.room].name+' 안에서만 움직여요.':''));return;}}
+  if(!drag.warned){drag.warned=true;msg((drag.room&&types()[drag.room]?types()[drag.room].name:'방')+' 벽이나 다른 가구에 막혀 더 갈 수 없어요.','warn');}}
+svg.addEventListener('pointermove',e=>{if((tool.kind==='door'||tool.kind==='win'||tool.kind==='out'||tool.kind==='open')&&!drag){if(e.pointerType==='mouse'){const q=rawPt(e);({door:doorPreview,win:winPreview,out:outPreview,open:openPreview})[tool.kind](q.x,q.y);}return;}if(!drag){if(tool.kind==='furn'&&e.pointerType==='mouse'){const c=cellAt(e);svg.style.cursor=c&&furnAt(c.x,c.y)>=0?'grab':'';}return;}
+  if(drag.move!==undefined){moveDrag(e);return;}const c=cellAt(e,true);drag.x1=c.x;drag.y1=c.y;showPv();});
+svg.addEventListener('pointerleave',()=>{if(tool.kind==='door')doorPreview(null);if(tool.kind==='win')winPreview(null);if(tool.kind==='out')outPreview(null);if(tool.kind==='open')openPreview(null);});
+svg.addEventListener('pointercancel',()=>{if(drag&&drag.move!==undefined&&drag.moved){plans[sid]=JSON.parse(drag.snap);}drag=null;render();});
+svg.addEventListener('pointerup',e=>{if(!drag)return;const d=drag;drag=null;
+  if(d.move!==undefined){svg.style.cursor='grab';const f=P().furn[d.move];
+    if(d.moved&&f&&(f.x!==d.sx||f.y!==d.sy)){hist.push(d.snap);if(hist.length>60)hist.shift();msg(FURN[f.k].name+'을(를) 옮겼어요.','ok');render();return;}}
+  apply(d);});
+function doorClash(d){const p=P(),seg=e=>e.o==='h'?[e.y,e.x,e.x+(e.len||2)]:[e.x,e.y,e.y+(e.len||2)];const [b,a0,a1]=seg(d);
+  return p.doors.concat(p.wins,p.opens||[]).some(e=>{if(e.o!==d.o)return false;const [eb,e0,e1]=seg(e);return eb===b&&e0<a1&&a0<e1;});}
+function findDoor(px,py){let first=null;
+  for(const c of winCands(px,py,doorLen)){const d={o:c.w.o,x:c.w.x,y:c.w.y,len:doorLen};if(doorClash(d)){if(!first)first='다른 문이나 창문과 겹쳐요.';continue;}const r=checkDoor(d);if(r.ok)return{d,r};if(!first)first=r.why;}
+  return{why:first};}
+function hitDoor(px,py){const fx=px/CS,fy=py/CS;return P().doors.findIndex(d=>{const n=DL(d),pc=d.o==='h'?fy:fx,al=d.o==='h'?fx:fy,b=d.o==='h'?d.y:d.x,st=d.o==='h'?d.x:d.y;return Math.abs(pc-b)<0.7&&al>=st-0.1&&al<=st+n+0.1;});}
+function doorTap(px,py){const p=P();
+  const hit=hitDoor(px,py);
+  if(hit>=0){push();const d=p.doors[hit];if(!d.n){d.n=1;d.s=d.s==='a'?'b':'a';msg('여는 방향을 바꿨어요. 한 번 더 누르면 문이 사라져요.','ok');}else{p.doors.splice(hit,1);msg('문을 뗐어요.','ok');}render();return;}
+  const f=findDoor(px,py);
+  if(f.d){push();f.d.s=f.r.s;f.d.n=0;p.doors.push(f.d);const T=types(),nm=f.r.ext?(f.r.room==='entry'?'현관문':(T[f.r.room]?T[f.r.room].name+' 바깥문':'바깥문')):'문';
+    msg(nm+'을 달았어요(폭 '+(f.d.len/2).toFixed(1)+'m). 문을 다시 누르면 여는 방향이 바뀌어요.','ok');render();return;}
+  msg((f.why||'여기에는 문을 달 수 없어요.')+' 실선으로 된 벽을 눌러 보세요.','warn');flashBad(px,py);}
+let dpv=null;
+let opLen=2;
+function fullRun(c){const s=S(),p=P(),W=s.W,H=s.H,o=c.o,max=o==='h'?W:H;const pair=k=>{const w=o==='h'?{o,x:k,y:c.y,len:1}:{o,x:c.x,y:k,len:1};const sd=winSides(w,W,H);return [sd.A[0]<0?null:p.cells[sd.A[0]],sd.B[0]<0?null:p.cells[sd.B[0]]].join('|');};
+  const busy=k=>onSeg(p.doors.concat(p.wins,p.opens,p.closes),o,o==='h'?k:c.x,o==='h'?c.y:k);
+  let st=o==='h'?c.x:c.y,en=st+1;const base=pair(st);if(busy(st))return null;
+  while(st-1>=0&&pair(st-1)===base&&!busy(st-1))st--;while(en<max&&pair(en)===base&&!busy(en))en++;
+  return o==='h'?{o,x:st,y:c.y,len:en-st}:{o,x:c.x,y:st,len:en-st};}
+function findOpen(px,py){let first=null;const p=P();
+  for(const c of winCands(px,py,opLen||1)){let op=opLen?c.w:fullRun(c.w);if(!op){if(!first)first='문이나 다른 경계와 겹쳐요.';continue;}
+    const r=checkOpen(op);
+    if(r.ok){if(opLen&&doorClash(op)){if(!first)first='문이나 다른 경계와 겹쳐요.';continue;}return{op,r,mode:'open'};}
+    const r2=checkClose(op);
+    if(r2.ok){const seg=e=>e.o==='h'?[e.y,e.x,e.x+e.len]:[e.x,e.y,e.y+e.len],[b,a0,a1]=seg(op);
+      if(p.closes.some(e=>{if(e.o!==op.o)return false;const [eb,e0,e1]=seg(e);return eb===b&&e0<a1&&a0<e1;})){if(!first)first='이미 벽을 세운 곳과 겹쳐요.';continue;}
+      return{op,r:r2,mode:'close'};}
+    if(!first)first=r.why;}
+  return{why:first};}
+function hitSeg(list,px,py){const fx=px/CS,fy=py/CS;return list.findIndex(w=>{const pc=w.o==='h'?fy:fx,al=w.o==='h'?fx:fy,b=w.o==='h'?w.y:w.x,st=w.o==='h'?w.x:w.y;return Math.abs(pc-b)<0.6&&al>=st-0.1&&al<=st+w.len+0.1;});}
+function hitOpen(px,py){const p=P();const a=hitSeg(p.opens,px,py);if(a>=0)return a;return hitSeg(p.closes,px,py)>=0?1e6:-1;}
+function josa(w,a,b){return w&&((w.charCodeAt(w.length-1)-0xAC00)%28)?a:b;}
+function openTap(px,py){const p=P();
+  const ho=hitSeg(p.opens,px,py);
+  if(ho>=0){push();p.opens.splice(ho,1);msg('열린 경계를 다시 벽으로 막았어요.','ok');render();return;}
+  const hc=hitSeg(p.closes,px,py);
+  if(hc>=0){push();p.closes.splice(hc,1);const gone=pruneDoors();msg('세운 벽을 없애고 다시 열린 경계로 텄어요.'+(gone?' (그 벽의 문·콘센트 '+gone+'개도 사라졌어요)':''),'ok');render();return;}
+  const f=findOpen(px,py);
+  if(f.op){push();const T=types(),na=T[f.r.a]?T[f.r.a].name:'',nb=T[f.r.b]?T[f.r.b].name:'',L=(f.op.len/2).toFixed(1);
+    if(f.mode==='open'){p.opens.push(f.op);const gone=pruneDoors();msg(na+josa(na,'과','와')+' '+nb+' 사이를 '+L+'m 텄어요. 문 없이 드나들 수 있어요.'+(gone?' (그 자리의 콘센트 '+gone+'개는 사라졌어요)':''),'ok');}
+    else{p.closes.push(f.op);msg(na+josa(na,'과','와')+' '+nb+' 사이에 벽을 '+L+'m 세웠어요. 다시 누르면 다시 트여요.','ok');}
+    render();return;}
+  msg((f.why||'여기에는 열린 경계를 만들 수 없어요.'),'warn');flashBad(px,py);}
+function openPreview(px,py){if(!dpv)return;if(px===null){dpv.setAttribute('visibility','hidden');return;}
+  if(hitOpen(px,py)>=0){dpv.setAttribute('visibility','hidden');svg.style.cursor='pointer';return;}
+  const f=findOpen(px,py);if(!f.op){dpv.setAttribute('visibility','hidden');svg.style.cursor='not-allowed';return;}
+  svg.style.cursor='pointer';const w=f.op,X=w.x*CS,Y=w.y*CS,L=w.len*CS;
+  dpv.setAttribute('x',w.o==='h'?X:X-4);dpv.setAttribute('y',w.o==='h'?Y-4:Y);dpv.setAttribute('width',w.o==='h'?L:8);dpv.setAttribute('height',w.o==='h'?8:L);dpv.setAttribute('visibility','visible');}
+function outCenter(o){if(o.o==='h')return[(o.x+0.5)*CS,o.y*CS+(o.s==='a'?-6:6)];return[o.x*CS+(o.s==='a'?-6:6),(o.y+0.5)*CS];}
+function outCands(px,py){const s=S(),W=s.W,H=s.H,fx=px/CS,fy=py/CS,out=[];
+  for(const o of ['h','v']){const pc=o==='h'?fy:fx,al=o==='h'?fx:fy,lim=o==='h'?H:W,max=o==='h'?W:H,k=Math.floor(al);if(k<0||k>=max)continue;
+    for(let b=Math.round(pc)-1;b<=Math.round(pc)+1;b++){if(b<0||b>lim)continue;const side=pc<b?'a':'b';
+      const c=o==='h'?{o,x:k,y:b,s:side}:{o,x:b,y:k,s:side};const ri=outRoomCell(c,W,H),oi=outOtherCell(c,W,H),cl=P().cells,wall=(ri<0?null:cl[ri])!==(oi<0?null:cl[oi]);const d0=Math.abs(pc-b);if(d0<=0.9)out.push({c,dist:d0+(wall?0:2)});}}
+  return out.sort((x,y)=>x.dist-y.dist);}
+function findOut(px,py){let first=null;for(const x of outCands(px,py)){const r=checkOut(x.c);if(r.ok)return{c:x.c,r};if(!first)first=r.why;}return{why:first};}
+function hitOut(px,py){let best=-1,bd=8;P().outs.forEach((o,i)=>{const c=outCenter(o),k=Math.hypot(c[0]-px,c[1]-py);if(k<bd){bd=k;best=i;}});return best;}
+function outTap(px,py){const p=P();const hit=hitOut(px,py);
+  if(hit>=0){push();p.outs.splice(hit,1);msg('콘센트를 뗐어요.','ok');render();return;}
+  const f=findOut(px,py);
+  if(f.c){if(p.outs.some(o=>o.o===f.c.o&&o.x===f.c.x&&o.y===f.c.y&&o.s===f.c.s)){msg('이미 콘센트가 있어요.','warn');return;}
+    push();p.outs.push(f.c);const T=types();msg((T[f.r.room]?T[f.r.room].name:'')+'에 콘센트를 달았어요.','ok');render();return;}
+  msg((f.why||'여기에는 콘센트를 달 수 없어요.'),'warn');flashBad(px,py);}
+function outPreview(px,py){if(!dpv)return;if(px===null){dpv.setAttribute('visibility','hidden');return;}
+  if(hitOut(px,py)>=0){dpv.setAttribute('visibility','hidden');svg.style.cursor='pointer';return;}
+  const f=findOut(px,py);if(!f.c){dpv.setAttribute('visibility','hidden');svg.style.cursor='not-allowed';return;}
+  svg.style.cursor='pointer';const c=outCenter(f.c);dpv.setAttribute('x',c[0]-6);dpv.setAttribute('y',c[1]-6);dpv.setAttribute('width',12);dpv.setAttribute('height',12);dpv.setAttribute('visibility','visible');}
+function flashBad(px,py){const c=el('circle',{cx:px,cy:py,r:9,fill:'none',stroke:css('--warn'),'stroke-width':3,'pointer-events':'none'});setTimeout(()=>{try{c.remove();}catch(e){}},700);}
+function doorPreview(px,py){if(!dpv)return;if(px===null){dpv.setAttribute('visibility','hidden');return;}
+  if(hitDoor(px,py)>=0){dpv.setAttribute('visibility','hidden');svg.style.cursor='pointer';return;}
+  const f=findDoor(px,py);if(!f.d){dpv.setAttribute('visibility','hidden');svg.style.cursor='not-allowed';return;}
+  svg.style.cursor='pointer';const d=f.d,X=d.x*CS,Y=d.y*CS,L=DL(d)*CS;
+  dpv.setAttribute('x',d.o==='h'?X:X-4);dpv.setAttribute('y',d.o==='h'?Y-4:Y);dpv.setAttribute('width',d.o==='h'?L:8);dpv.setAttribute('height',d.o==='h'?8:L);dpv.setAttribute('visibility','visible');}
+function furnAt(x,y){return P().furn.findIndex(f=>x>=f.x&&x<f.x+f.w&&y>=f.y&&y<f.y+f.h);}
+function overlaps(f,skip){return P().furn.some((g,i)=>i!==skip&&f.x<g.x+g.w&&g.x<f.x+f.w&&f.y<g.y+g.h&&g.y<f.y+f.h);}
+function apply(d){const s=S(),p=P();const x0=Math.min(d.x0,d.x1),x1=Math.max(d.x0,d.x1),y0=Math.min(d.y0,d.y1),y1=Math.max(d.y0,d.y1);
+  if(tool.kind==='room'){push();for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++)p.cells[y*s.W+x]=tool.id;msg(types()[tool.id].name+' '+((x1-x0+1)/2).toFixed(1)+'m × '+((y1-y0+1)/2).toFixed(1)+'m를 칠했어요.');}
+  else if(tool.kind==='erase'){push();for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++)p.cells[y*s.W+x]=null;const before=p.furn.length;p.furn=p.furn.filter(f=>!(f.x<=x1&&x0<f.x+f.w&&f.y<=y1&&y0<f.y+f.h));msg('지웠어요'+(before!==p.furn.length?' (가구 '+(before-p.furn.length)+'개 포함).':'.'));}
+  else{const i=furnAt(d.x0,d.y0);
+    if(i>=0&&p.furn[i].k==='chair'){push();const f=p.furn[i];f.r=((f.r||0)+1)%4;msg('의자를 90° 돌렸어요. 굵은 선이 등받이예요.');}
+    else if(i>=0){const f=p.furn[i],nf={k:f.k,x:f.x,y:f.y,w:f.h,h:f.w};if(nf.x+nf.w>s.W||nf.y+nf.h>s.H||overlaps(nf,i)){msg('돌릴 자리가 없어요. 조금 옮겨서 다시 놓아 보세요.');}else{push();p.furn[i]=nf;msg(FURN[f.k].name+'을(를) 90° 돌렸어요.');}}
+    else{const F=FURN[tool.k];const nf={k:tool.k,x:Math.min(d.x0,s.W-F.w),y:Math.min(d.y0,s.H-F.h),w:F.w,h:F.h};
+      if(overlaps(nf,-1))msg('다른 가구와 겹쳐요.');else{push();p.furn.push(nf);msg(F.name+'을(를) 놓았어요. 다시 누르면 90° 돌아가요.');}}}
+  if(tool.kind!=='furn'){const gone=pruneDoors();if(gone)msg(document.getElementById('msg').textContent+' 벽이 바뀌어 문·창문 '+gone+'개도 사라졌어요.');}
+  render();}
+
+/* ---------- 버튼 ---------- */
+document.getElementById('undo').addEventListener('click',()=>{if(!hist.length){msg('되돌릴 작업이 없어요.');return;}plans[sid]=JSON.parse(hist.pop());render();msg('한 단계 되돌렸어요.');});
+document.getElementById('sample').addEventListener('click',()=>{push();plans[sid]=sampleFamily4();render();msg('예시를 불러왔어요. 되돌리기로 원래 도면에 돌아갈 수 있어요.');});
+let armT=null;const clr=document.getElementById('clear');
+clr.addEventListener('click',()=>{if(!armT){clr.textContent='한 번 더 누르면 지워져요';armT=setTimeout(()=>{armT=null;clr.textContent='모두 지우기';},3000);return;}
+  clearTimeout(armT);armT=null;clr.textContent='모두 지우기';push();const s=S();plans[sid]={cells:new Array(s.W*s.H).fill(null),furn:[]};render();msg('도면을 비웠어요. 되돌리기로 살릴 수 있어요.');});
+document.getElementById('toImg').addEventListener('click',()=>{const out=document.getElementById('imgout');
+  try{if(pv)pv.setAttribute('visibility','hidden');let tag=null;if(WHO){tag=txt(S().W*CS,-M/2,S().title+' · '+WHO,{'text-anchor':'end','font-size':12,'font-weight':700,fill:css('--ink')});}const vb=svg.viewBox.baseVal,src0=new XMLSerializer().serializeToString(svg),src=/^<svg[^>]*xmlns=/.test(src0)?src0:src0.replace('<svg','<svg xmlns="http://www.w3.org/2000/svg"');if(tag)tag.remove();
+    const url='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(src);const img=new Image();
+    img.onload=()=>{let data=url;try{const c=document.createElement('canvas');c.width=vb.width*2;c.height=vb.height*2;const g=c.getContext('2d');g.drawImage(img,0,0,c.width,c.height);data=c.toDataURL('image/png');}catch(e){}
+      out.innerHTML='<p class="small muted" style="margin:8px 0 0">이미지를 길게 누르거나 오른쪽 클릭해 저장하세요.</p>';const im=document.createElement('img');im.alt=S().title+' 평면도';im.src=data;out.appendChild(im);};
+    img.onerror=()=>{out.innerHTML='<p class="small muted">이미지를 만들지 못했어요. 화면 캡처로 저장해 주세요.</p>';};img.src=url;}
+  catch(e){out.innerHTML='<p class="small muted">이미지를 만들지 못했어요. 화면 캡처로 저장해 주세요.</p>';}});
+document.getElementById('copy').addEventListener('click',()=>{const s=S(),A=analyze(),T=A.T;
+  const rooms=Object.keys(A.by).filter(t=>T[t]).map(t=>T[t].name+' '+A.area(t).toFixed(1)+'㎡').join(', ');
+  const th=s.think.map((q,i)=>'Q. '+q+'\nA. '+((notes[sid]||{})[i]||'(미작성)')).join('\n');
+  const text=(WHO?'이름: '+WHO+'\n':'')+'['+s.title+'] 평면도\n가족: '+s.who+'\n공간: '+(rooms||'(없음)')+'\n문 '+P().doors.length+'개 · 창문 '+P().wins.length+'개 · 콘센트 '+P().outs.length+'개'+'\n\n조건 점검\n'+lastResults.join('\n')+'\n\n생각해 보기\n'+th;
+  const mm=document.getElementById('copyMsg');
+  try{navigator.clipboard.writeText(text).then(()=>{mm.textContent='복사했어요. 제출 칸에 붙여 넣으세요.';},()=>{mm.textContent='복사가 막혀 있어요. 화면 캡처로 제출해 주세요.';});}catch(e){mm.textContent='복사가 막혀 있어요. 화면 캡처로 제출해 주세요.';}});
+
+buildAll();
+try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',render);}catch(e){}
+new MutationObserver(render).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+})();
+</script>
+
+</body>
+</html>
